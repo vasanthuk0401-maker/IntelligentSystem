@@ -1,5 +1,8 @@
 # Intelligent Job Search – Multi-Agent System
 
+**Live demo:** https://intelligent-job-search.streamlit.app (offline mode, 4,000 real LinkedIn postings;
+click *Use sample CV* → *Build profile* → *Find matching jobs* to try it)
+
 A multi-agent career assistant that turns a CV into a structured profile, finds and analyses jobs,
 scores how well you match, decides the next step (search more, recommend, or prepare), and then
 tailors your CV and prepares you for interviews. Everything is saved to memory for future runs.
