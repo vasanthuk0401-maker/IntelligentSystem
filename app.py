@@ -13,6 +13,7 @@ from core.memory import Memory
 from core.schemas import UserInput
 from orchestrator import Orchestrator
 from tools.cv_parser import parse_cv_bytes
+from tools.job_sources import available_datasets, default_sources
 
 st.set_page_config(page_title="Intelligent Job Search", page_icon="🎯", layout="wide")
 
@@ -20,6 +21,13 @@ st.set_page_config(page_title="Intelligent Job Search", page_icon="🎯", layout
 @st.cache_resource
 def shared_memory() -> Memory:
     return Memory()
+
+
+@st.cache_resource(show_spinner="Loading and indexing job dataset...")
+def load_sources(dataset_path: str):
+    sources = default_sources(dataset_path)
+    _ = sources[0].jobs  # load + build index once
+    return sources
 
 
 ss = st.session_state
@@ -41,13 +49,17 @@ with st.sidebar:
         st.warning("LLM: offline heuristics\n\nSet `ANTHROPIC_API_KEY` in `.env` to enable Claude.")
     if llm.last_error:
         st.caption(f"Last LLM note: {llm.last_error}")
+    datasets = available_datasets()
+    default_ds = next((i for i, p in enumerate(datasets) if p.resolve() == config.JOBS_DATASET.resolve()), 0)
+    dataset = st.selectbox("Job dataset", datasets, index=default_ds, format_func=lambda p: p.name,
+                           help="Add more with: python import_jobs.py data/raw/postings.csv")
     threshold = st.slider("Match threshold", 30, 90, int(config.MATCH_THRESHOLD), 5,
                           help="Below this, the Decision Agent broadens the search.")
     max_iter = st.slider("Max search iterations", 1, 5, config.MAX_SEARCH_ITERATIONS)
     st.divider()
     st.caption("Workflow: Profile → Search → Analysis → Matching → Decision → CV / Interview → Dashboard → Memory")
 
-orch = Orchestrator(user_id=user_id, llm=llm, memory=shared_memory())
+orch = Orchestrator(user_id=user_id, llm=llm, memory=shared_memory(), sources=load_sources(str(dataset)))
 orch.decision_agent.threshold = threshold
 orch.decision_agent.max_iterations = max_iter
 

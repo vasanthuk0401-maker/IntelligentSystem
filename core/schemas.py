@@ -48,6 +48,7 @@ class SearchCriteria(BaseModel):
     exclude_job_ids: List[str] = Field(default_factory=list)
     limit: int = 10
     broaden_level: int = 0  # increased by the feedback loop
+    query_text: str = ""  # profile summary used to semantically re-rank candidates
 
 
 class JobListing(BaseModel):

@@ -28,6 +28,9 @@ W_SKILL, W_SEMANTIC, W_EXP = 0.5, 0.3, 0.2
 # Map raw bge-small cosine (unrelated ~0.55, near-identical ~0.85) onto 0-1.
 EMB_LO, EMB_HI = 0.55, 0.85
 TFIDF_SCALE = 0.35
+# "embeddings" scored best on data/eval_cases.json (python evaluate.py);
+# "hybrid" (embeddings + TF-IDF) and "tfidf" are kept for comparison.
+SEMANTIC_MODE = "embeddings"
 
 
 def profile_text(p: CareerProfile) -> str:
@@ -50,9 +53,10 @@ def job_text(j: JobListing) -> str:
 class SkillMatchingAgent(BaseAgent):
     name = "Skill Matching Agent"
 
-    def __init__(self, use_embeddings: bool = True, **kw):
+    def __init__(self, use_embeddings: bool = True, mode: str = SEMANTIC_MODE, **kw):
+        """mode: "hybrid" (embeddings + TF-IDF average), "embeddings" or "tfidf"."""
         super().__init__(**kw)
-        self.use_embeddings = use_embeddings
+        self.mode = mode if use_embeddings else "tfidf"
         self.last_method = "tfidf"
 
     def run(self, profile: CareerProfile, jobs: List[JobListing],
@@ -71,13 +75,18 @@ class SkillMatchingAgent(BaseAgent):
         return results
 
     def semantic_scores(self, profile: CareerProfile, jobs: List[JobListing]) -> List[float]:
-        emb = get_embedder() if self.use_embeddings else None
+        emb = get_embedder() if self.mode != "tfidf" else None
         if emb is not None:
             try:
                 q = emb.embed([profile_embed_text(profile)])[0]
                 sims = emb.embed([job_text(j) for j in jobs]) @ q
+                e_scores = np.clip((sims - EMB_LO) / (EMB_HI - EMB_LO), 0, 1)
+                if self.mode == "hybrid":
+                    self.last_method = "hybrid"
+                    t_scores = np.asarray(self._tfidf_scores(profile, jobs))
+                    return [float(x) for x in 0.5 * e_scores + 0.5 * t_scores]
                 self.last_method = "embeddings"
-                return [float(np.clip((s - EMB_LO) / (EMB_HI - EMB_LO), 0, 1)) for s in sims]
+                return [float(x) for x in e_scores]
             except Exception as e:
                 self.log(f"Embedding failed ({e}); using TF-IDF.")
         self.last_method = "tfidf"

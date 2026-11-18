@@ -36,15 +36,33 @@ set or a call fails, each agent falls back to an offline heuristic, so the syste
 - Each match lists matched / related / missing skills and a plain-English explanation.
 
 ### Matching quality
-`python evaluate.py` scores the final ranking on labelled cases in `data/eval_cases.json`:
+`python evaluate.py` scores the final ranking for 17 labelled CVs (`data/eval_cases.json`, 7 of them
+paraphrased) against the 24-job sample set:
 
 | Semantic method | Mean AUC | Mean P@k |
 |---|---|---|
-| TF-IDF | 0.903 | 0.771 |
-| bge-small embeddings | **0.957** | **0.854** |
+| TF-IDF | 0.947 | 0.799 |
+| bge-small embeddings (default) | **0.957** | **0.819** |
+| hybrid (50/50) | 0.950 | 0.819 |
 
-The biggest gain is on CVs that describe skills in their own words rather than using keywords.
-Only 4 labelled profiles so far, so add more cases before reading much into small differences.
+Differences are small: on 24 jobs, skill overlap dominates the score. Embeddings help most on
+paraphrased CVs (DevOps P@k 0.33 → 0.67) and lose slightly on a few keyword-heavy ones.
+`python evaluate.py --dataset data/jobs_linkedin.jsonl` measures precision@10 of the real search
+pipeline on a large dataset, using each case's `title_pattern` as an approximate relevance label.
+
+## Real job data (LinkedIn 2023-24, Kaggle)
+1. Download https://www.kaggle.com/datasets/arshkon/linkedin-job-postings and place `postings.csv`
+   in `data/raw/`.
+2. Import (random 20k sample; `--limit 0` for all ~124k):
+   ```bash
+   python import_jobs.py data/raw/postings.csv
+   ```
+3. Pick `jobs_linkedin.jsonl` in the dashboard's **Job dataset** dropdown (or set `JOBS_DATASET` in `.env`).
+
+Search is two-stage so it scales: an IDF-weighted inverted index retrieves ~50 keyword candidates, then
+local embeddings re-rank them against your profile, and only the top 10 go to the Job Analysis Agent
+(which matters for Claude cost). Note this dataset is US-only; with a non-US location the Decision
+Agent relaxes the location filter on the second search iteration.
 
 ### Decision policy
 - Fewer than 2 jobs ≥ threshold (default 60) → **search_more**: broaden keywords with related roles,

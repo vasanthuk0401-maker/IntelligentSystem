@@ -4,3 +4,5 @@ __pycache__/
 .pytest_cache/
 data/memory.db
 data/models/
+data/raw/
+data/jobs_*.jsonl
