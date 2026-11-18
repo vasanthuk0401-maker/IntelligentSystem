@@ -1,0 +1,14 @@
+[
+  {"name": "ml_sample", "cv_file": "sample_cv.txt", "preferred_role": "Machine Learning Engineer",
+   "career_goal": "Build production AI systems",
+   "relevant": ["J001", "J002", "J003", "J010", "J013", "J019", "J020", "J023"]},
+  {"name": "analyst_paraphrase", "preferred_role": "Analyst", "career_goal": "Become a data-driven decision maker",
+   "cv_text": "Commerce graduate. I turn messy spreadsheets into dashboards that managers use for weekly reviews. Built KPI reports for a retail chain, wrote queries against the sales database, ran experiments on pricing. Comfortable with pivot tables, charts and presenting findings.",
+   "relevant": ["J004", "J012", "J022", "J001"]},
+  {"name": "frontend", "preferred_role": "Frontend Developer", "career_goal": "Grow into a senior UI engineer",
+   "cv_text": "Web developer, 2 years. Built responsive single-page apps with React and TypeScript, styled with Tailwind. Worked closely with designers in Figma, consumed REST endpoints, wrote component tests.",
+   "relevant": ["J006", "J007", "J017"]},
+  {"name": "devops_paraphrase", "preferred_role": "Platform Engineer", "career_goal": "Run reliable infrastructure at scale",
+   "cv_text": "Systems engineer who automates everything. Containerised legacy services, set up deployment pipelines, manage clusters and cloud infrastructure, write shell scripts, on-call for production incidents.",
+   "relevant": ["J008", "J020", "J009"]}
+]

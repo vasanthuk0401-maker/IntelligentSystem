@@ -1,0 +1,23 @@
+Priya Sharma
+Final-year B.Tech Computer Science student passionate about applied machine learning and NLP.
+Email: priya.sharma@example.com | Bengaluru, India
+
+EDUCATION
+B.Tech in Computer Science and Engineering, ABC Institute of Technology, 2022-2026, CGPA 8.7
+
+SKILLS
+Python, SQL, Pandas, NumPy, scikit-learn, PyTorch, NLP, Machine Learning, Git, FastAPI, Docker, Data Visualization, Statistics
+
+EXPERIENCE
+Machine Learning Intern - DataWave Solutions (Jun 2025 - Dec 2025, 6 months)
+- Built a text classification model with PyTorch that improved ticket routing accuracy by 18%.
+- Deployed the model as a REST API with FastAPI and Docker.
+- Wrote SQL queries and Pandas pipelines to clean 2M customer records.
+
+PROJECTS
+- Resume Screening Assistant: built an NLP pipeline with scikit-learn and LLMs (RAG) to rank resumes against job descriptions.
+- Stock Trend Dashboard: data analysis and data visualization with Pandas and Plotly.
+
+ACHIEVEMENTS
+- Top 5% in a national-level hackathon on NLP.
+- Led a team of 4 students for the final-year project.
