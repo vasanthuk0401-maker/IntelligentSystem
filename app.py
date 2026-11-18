@@ -4,6 +4,9 @@ Run:  streamlit run app.py
 """
 from __future__ import annotations
 
+import os
+import uuid
+
 import pandas as pd
 import streamlit as st
 
@@ -41,7 +44,11 @@ ss.setdefault("feedback", {})
 # ---------------- Sidebar ----------------
 with st.sidebar:
     st.title("🎯 Intelligent Job Search")
-    user_id = st.text_input("User ID", value="default", help="Memory is stored per user ID.")
+    if config.PUBLIC_DEMO:
+        user_id = ss.setdefault("uid", f"guest-{uuid.uuid4().hex[:10]}")
+        st.caption("Public demo: your data is private to this browser session and is not kept long-term.")
+    else:
+        user_id = st.text_input("User ID", value="default", help="Memory is stored per user ID.")
     llm = get_llm()
     if llm.enabled:
         st.success(f"LLM: {llm.mode}")
@@ -50,7 +57,10 @@ with st.sidebar:
     if llm.last_error:
         st.caption(f"Last LLM note: {llm.last_error}")
     datasets = available_datasets()
-    default_ds = next((i for i, p in enumerate(datasets) if p.resolve() == config.JOBS_DATASET.resolve()), 0)
+    names = [p.name for p in datasets]
+    default_ds = next((names.index(n) for n in config.DEFAULT_DATASETS if n in names), 0)
+    if os.getenv("JOBS_DATASET") and config.JOBS_DATASET.name in names:
+        default_ds = names.index(config.JOBS_DATASET.name)
     dataset = st.selectbox("Job dataset", datasets, index=default_ds, format_func=lambda p: p.name,
                            help="Add more with: python import_jobs.py data/raw/postings.csv")
     threshold = st.slider("Match threshold", 30, 90, int(config.MATCH_THRESHOLD), 5,

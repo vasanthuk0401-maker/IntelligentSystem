@@ -71,7 +71,8 @@ the overlap was tested and made results worse. Embeddings vs hybrid are within n
    ```bash
    python import_jobs.py data/raw/postings.csv
    ```
-3. Pick `jobs_linkedin.jsonl` in the dashboard's **Job dataset** dropdown (or set `JOBS_DATASET` in `.env`).
+3. The dashboard selects `jobs_linkedin.jsonl` automatically when present; switch datasets in the
+   **Job dataset** dropdown (or set `JOBS_DATASET` in `.env`). A 4,000-job sample is bundled.
 
 Search is two-stage so it scales: an IDF-weighted inverted index retrieves ~50 keyword candidates, then
 local embeddings re-rank them against your profile, and only the top 10 go to the Job Analysis Agent
@@ -111,8 +112,32 @@ python orchestrator.py data/sample_cv.txt
 Tests (offline, no API key needed):
 
 ```bash
+pip install -r requirements-dev.txt
+```
+
+```bash
 python -m pytest -q
 ```
+
+## Deploy (Streamlit Community Cloud)
+1. Push this repo to GitHub.
+2. At https://share.streamlit.io choose **Create app → Deploy a public app from GitHub**, select the
+   repo, branch `main`, main file `app.py`.
+3. Under **Advanced settings**, pick Python 3.11 and add this secret:
+   ```toml
+   PUBLIC_DEMO = "1"
+   ```
+   Public demo mode gives every browser session its own random user ID, so visitors never see each
+   other's profiles. Memory (SQLite) lives on the app's temporary disk and resets when the app restarts.
+4. The app runs in free offline mode. To enable Claude, also add `ANTHROPIC_API_KEY`, but note that
+   every visitor's actions are then billed to your key.
+
+The deployed app searches the bundled 4,000-job LinkedIn sample (`data/jobs_linkedin_sample.jsonl`);
+the embedding model (~130 MB) downloads on first start, so the first load takes a minute.
+
+## Data
+`data/jobs_linkedin_sample.jsonl` is a subset of the Kaggle *LinkedIn Job Postings (2023-2024)* dataset,
+CC BY-SA 4.0. See [data/DATA_LICENSE.md](data/DATA_LICENSE.md) for attribution.
 
 ## Extending
 - **More job sources:** add a class with `name` and `search(criteria) -> list[JobListing]` in

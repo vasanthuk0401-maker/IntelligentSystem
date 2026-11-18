@@ -19,6 +19,12 @@ MODELS_DIR = Path(os.getenv("MODELS_DIR", DATA_DIR / "models"))
 # Local embedding model for semantic matching; set to "tfidf" to disable.
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
 
+# Public demo mode (set PUBLIC_DEMO=1 in Streamlit Cloud secrets): each browser
+# session gets its own random user ID so visitors never see each other's data.
+PUBLIC_DEMO = os.getenv("PUBLIC_DEMO", "").lower() in {"1", "true", "yes"}
+# Dataset the dashboard selects first (the first of these that exists).
+DEFAULT_DATASETS = ["jobs_linkedin.jsonl", "jobs_linkedin_sample.jsonl", "jobs.json"]
+
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-opus-5-5")
 MATCH_THRESHOLD = float(os.getenv("MATCH_THRESHOLD", "60"))
 MAX_SEARCH_ITERATIONS = int(os.getenv("MAX_SEARCH_ITERATIONS", "3"))
