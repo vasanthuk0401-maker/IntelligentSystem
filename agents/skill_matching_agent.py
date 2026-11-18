@@ -1,7 +1,7 @@
 """5. Skill Matching Agent - compares user skills with job requirements and
 calculates a match score with an explanation.
 
-Score = 50% skill coverage + 30% semantic similarity + 20% experience fit
+Score = 25% skill coverage + 60% semantic similarity + 15% experience fit
         (+ small location bonus/penalty).
 
 - Skill coverage: exact/alias matches get full credit, related skills
@@ -24,7 +24,10 @@ from core.schemas import CareerProfile, JobListing, JobRequirements, MatchResult
 from tools.embeddings import get_embedder
 from tools.skills import RELATED_CREDIT, skills_overlap
 
-W_SKILL, W_SEMANTIC, W_EXP = 0.5, 0.3, 0.2
+# Tuned with evaluate.py: shifting weight from skill overlap (0.5/0.3/0.2) to
+# semantic similarity raised real-data P@10 0.73 -> 0.78 and curated P@k
+# 0.82 -> 0.85. Experience kept at 0.15 because neither eval measures seniority fit.
+W_SKILL, W_SEMANTIC, W_EXP = 0.25, 0.6, 0.15
 # Map raw bge-small cosine (unrelated ~0.55, near-identical ~0.85) onto 0-1.
 EMB_LO, EMB_HI = 0.55, 0.85
 TFIDF_SCALE = 0.35

@@ -26,7 +26,8 @@ tailors your CV and prepares you for interviews. Everything is saved to memory f
 set or a call fails, each agent falls back to an offline heuristic, so the system always runs.
 
 ### How matching works
-`score = 50% skill coverage + 30% semantic similarity + 20% experience fit`, ±location adjustment.
+`score = 25% skill coverage + 60% semantic similarity + 15% experience fit`, ±location adjustment
+(weights tuned with `evaluate.py`, see below).
 
 - **Skill coverage:** exact matches get full credit; *related* skills (e.g. you know TensorFlow, the job
   asks for PyTorch) get 50% credit via a curated map in `tools/skills.py`; required skills weigh 2× preferred.
@@ -36,19 +37,32 @@ set or a call fails, each agent falls back to an offline heuristic, so the syste
 - Each match lists matched / related / missing skills and a plain-English explanation.
 
 ### Matching quality
-`python evaluate.py` scores the final ranking for 17 labelled CVs (`data/eval_cases.json`, 7 of them
-paraphrased) against the 24-job sample set:
+Evaluated with 17 CVs from different fields (`data/eval_cases.json`, 7 written as paraphrases that
+avoid keywords). Offline mode (no Claude).
+
+**Real data** - `python evaluate.py --dataset data/jobs_linkedin.jsonl` (20,000 LinkedIn jobs).
+Relevance is approximated by a job-title pattern per CV, so treat these as indicative:
+
+| Stage | Mean precision@10 |
+|---|---|
+| Random job (base rate) | 0.01 |
+| Keyword search (IDF index) | 0.71 |
+| + semantic re-rank (embeddings) | **0.81** |
+| Final match ranking, original weights 0.5/0.3/0.2 | 0.73 |
+| Final match ranking, tuned weights 0.25/0.6/0.15 | 0.78 |
+
+**Curated** - `python evaluate.py` (24-job sample set, hand-labelled relevance), final match score:
 
 | Semantic method | Mean AUC | Mean P@k |
 |---|---|---|
-| TF-IDF | 0.947 | 0.799 |
-| bge-small embeddings (default) | **0.957** | **0.819** |
-| hybrid (50/50) | 0.950 | 0.819 |
+| TF-IDF | 0.953 | 0.784 |
+| bge-small embeddings (default) | 0.963 | **0.848** |
+| hybrid (50/50) | **0.967** | 0.819 |
 
-Differences are small: on 24 jobs, skill overlap dominates the score. Embeddings help most on
-paraphrased CVs (DevOps P@k 0.33 → 0.67) and lose slightly on a few keyword-heavy ones.
-`python evaluate.py --dataset data/jobs_linkedin.jsonl` measures precision@10 of the real search
-pipeline on a large dataset, using each case's `title_pattern` as an approximate relevance label.
+Findings: semantic re-ranking gives the biggest real-data gain (Product Manager P@10 0.2 → 0.9).
+The original skill-heavy score *reordered good results worse*; shifting weight to semantic similarity
+fixed most of that on both evaluations. Removing generic soft skills (Communication, Excel...) from
+the overlap was tested and made results worse. Embeddings vs hybrid are within noise on 17 CVs.
 
 ## Real job data (LinkedIn 2023-24, Kaggle)
 1. Download https://www.kaggle.com/datasets/arshkon/linkedin-job-postings and place `postings.csv`
